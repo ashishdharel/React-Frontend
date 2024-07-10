@@ -1,0 +1,46 @@
+name: Deploying react app
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies and build
+        run: |
+          npm install
+          npm run build
+
+      - name: Upload build artifacts to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.EC2_PORT }}
+          source: "build/*"
+          target: "/home/ubuntu/"
+
+
+      - name: Deploy code to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.EC2_PORT }}
+          script: |  
+              sudo rm -rf /var/www/html/*
+              sudo mv build/* /var/www/html/
+              echo "It's Working"
