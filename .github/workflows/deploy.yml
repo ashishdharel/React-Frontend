@@ -43,4 +43,4 @@ jobs:
           script: |  
               sudo rm -rf /var/www/html/*
               sudo mv build/* /var/www/html/
-              echo "It's Working"
+              echo "It's Working now"
